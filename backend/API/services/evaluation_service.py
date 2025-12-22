@@ -1,15 +1,13 @@
 import logging
-
 from AI.relevance_model import news_analysis
 
-#========================ЛОГИ=========================#
+
 logging.basicConfig(
-    level = logging.INFO,
-    format = "%(asctime)s [%(levelname)s] %(message)s",
-    datefmt = "%Y-%m-%d %H:%M:%S"
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
 logger = logging.getLogger(__name__)
-#=====================================================#
 
 
 def process_evaluation(data: dict) -> dict:
@@ -19,14 +17,14 @@ def process_evaluation(data: dict) -> dict:
     if not isinstance(title, str) or not isinstance(text, str):
         return {
             "status": "error",
-            "message": "Ожидались поля 'title' и 'text' строкового типа",
+            "message": "Поля 'title' и 'text' должны быть строками",
             "received_data": data
         }
 
     try:
-        prediction, proba = news_analysis(title + text)
+        analysis = news_analysis(title + " " + text)
 
-        result_json = {
+        return {
             "summary": {
                 "title": title,
                 "text": text
@@ -34,19 +32,17 @@ def process_evaluation(data: dict) -> dict:
             "results": {
                 "freshness_model": {
                     "name": "freshness_model",
-                    "status": prediction,
-                    "confidence": float(proba.max()),
-                    "prob_fresh": float(proba[1]),
-                    "prob_old": float(proba[0])
+                    "status": analysis["status"],
+                    "score": round(analysis["score"], 4),
+                    "confidence": round(analysis["confidence"], 4)
                 }
             }
         }
 
-        return result_json
-    except Exception as exception:
-        logger.error(exception)
+    except Exception as exc:
+        logger.exception("Ошибка анализа")
         return {
             "status": "error",
-            "message": str(exception),
+            "message": str(exc),
             "received_data": data
         }
