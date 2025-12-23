@@ -1,8 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import type { EvaluationRequest, EvaluationResponse, ApiError } from '../../../src/types/evaluation';
+import { 
+  Send, 
+  RefreshCw, 
+  FileText, 
+  Type, 
+  Sparkles,
+  AlertTriangle,
+  Clock
+} from 'lucide-react';
+import type { EvaluationRequest, EvaluationResponse } from '../../types/evaluation';
 import { evaluationApi } from '../../services/api';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
+import ResultCard from '../ResultCard/ResultCard';
 import './EvaluationForm.css';
 
 const EvaluationForm: React.FC = () => {
@@ -16,7 +25,7 @@ const EvaluationForm: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
@@ -34,7 +43,8 @@ const EvaluationForm: React.FC = () => {
       const response = await evaluationApi.postEvaluation(formData);
       setResult(response);
     } catch (err) {
-      const apiError = err as ApiError;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apiError = err as any;
       setError(apiError.message || 'Произошла ошибка при отправке данных');
     } finally {
       setLoading(false);
@@ -47,89 +57,168 @@ const EvaluationForm: React.FC = () => {
     setError(null);
   };
 
+  const handleExample = () => {
+    setFormData({
+      title: 'Словосочетание «схема Долиной» включили в словарь русского языка',
+      text: 'Словосочетание «схема Долиной» и еще четыре выражения, связанные с историей продажи квартиры певицы Ларисы Долиной, включат в словарь новых словарных новообразований.'
+    });
+  };
+
   const isFormValid = formData.title.trim() && formData.text.trim();
 
   return (
-    <div className="evaluation-form card">
-      <div className="card-header">
-        <h1 className="evaluation-form__title">Relevance AI Evaluation</h1>
+    <div className="evaluation-form">
+      <div className="evaluation-form__header">
+        <div className="evaluation-form__header-content">
+          <div className="evaluation-form__icon">
+            <Sparkles size={32} />
+          </div>
+          <div>
+            <h1 className="evaluation-form__title">Relevance AI Evaluation</h1>
+            <p className="evaluation-form__subtitle">
+              Анализ свежести и релевантности контента с помощью искусственного интеллекта
+            </p>
+          </div>
+        </div>
       </div>
-      
-      <div className="card-body">
-        <form onSubmit={handleSubmit} className="evaluation-form__form">
-          <div className="form-group">
-            <label htmlFor="title" className="form-label">
-              Заголовок *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-              placeholder="Введите заголовок"
-              disabled={loading}
-            />
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="text" className="form-label">
-              Текст *
-            </label>
-            <textarea
-              id="text"
-              name="text"
-              value={formData.text}
-              onChange={handleInputChange}
-              required
-              className="form-textarea"
-              placeholder="Введите текст для оценки"
-              disabled={loading}
-            />
-          </div>
+      <div className="evaluation-form__card">
+        <div className="evaluation-form__card-body">
+          <form onSubmit={handleSubmit} className="evaluation-form__form">
+            <div className="form-section">
+              <div className="form-section__header">
+                <Type size={20} />
+                <h3 className="form-section__title">Заголовок контента</h3>
+              </div>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                className="form-input"
+                placeholder="Введите заголовок статьи или новости"
+                disabled={loading}
+                maxLength={200}
+              />
+              <div className="form-input__counter">
+                {formData.title.length}/200 символов
+              </div>
+            </div>
 
-          <div className="evaluation-form__actions">
-            <button
-              type="submit"
-              disabled={loading || !isFormValid}
-              className="btn btn-primary btn-full evaluation-form__submit"
-            >
-              {loading ? 'Отправка...' : 'Отправить на оценку'}
-            </button>
-            
-            <button
-              type="button"
-              onClick={handleReset}
-              disabled={loading}
-              className="btn btn-secondary evaluation-form__reset"
-            >
-              Очистить
-            </button>
-          </div>
-        </form>
+            <div className="form-section">
+              <div className="form-section__header">
+                <FileText size={20} />
+                <h3 className="form-section__title">Текст контента</h3>
+              </div>
+              <textarea
+                id="text"
+                name="text"
+                value={formData.text}
+                onChange={handleInputChange}
+                required
+                className="form-textarea"
+                placeholder="Введите текст для анализа..."
+                disabled={loading}
+                rows={6}
+                maxLength={2000}
+              />
+              <div className="form-input__counter">
+                {formData.text.length}/2000 символов
+              </div>
+            </div>
 
-        {loading && (
-          <div className="evaluation-form__loading">
-            <LoadingSpinner />
-          </div>
-        )}
+            <div className="evaluation-form__actions">
+              <button
+                type="button"
+                onClick={handleExample}
+                disabled={loading}
+                className="btn btn-secondary"
+              >
+                <RefreshCw size={18} />
+                Заполнить примером
+              </button>
+              
+              <div className="evaluation-form__actions-group">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={loading}
+                  className="btn btn-secondary"
+                >
+                  Очистить
+                </button>
+                
+                <button
+                  type="submit"
+                  disabled={loading || !isFormValid}
+                  className="btn btn-primary btn-with-icon"
+                >
+                  {loading ? (
+                    <>
+                      <div className="btn-spinner"></div>
+                      Анализ...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={18} />
+                      Начать анализ
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
 
-        {error && (
-          <div className="alert alert-error">
-            <strong>Ошибка:</strong> {error}
-          </div>
-        )}
+          {loading && (
+            <div className="evaluation-form__loading">
+              <LoadingSpinner />
+            </div>
+          )}
 
-        {result && !loading && (
-          <div className="evaluation-form__result">
-            <h3 className="evaluation-form__result-title">Результат оценки:</h3>
-            <pre className="evaluation-form__result-content">
-              {JSON.stringify(result, null, 2)}
-            </pre>
-          </div>
-        )}
+          {error && (
+            <div className="evaluation-form__error">
+              <div className="alert alert-error">
+                <AlertTriangle size={20} />
+                <div>
+                  <strong>Ошибка анализа</strong>
+                  <p>{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {result && !loading && (
+            <div className="evaluation-form__result">
+              <div className="result-summary">
+                <h3 className="result-summary__title">Проанализированный контент</h3>
+                <div className="result-summary__content">
+                  <div className="result-summary__item">
+                    <strong>Заголовок:</strong>
+                    <p>{result.summary.title}</p>
+                  </div>
+                  <div className="result-summary__item">
+                    <strong>Текст:</strong>
+                    <p>{result.summary.text}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="evaluation-form__results">
+                <h3 className="results-title">Результаты анализа</h3>
+                <ResultCard data={result.results.freshness_model} />
+                
+                {result.timestamp && (
+                  <div className="analysis-timestamp">
+                    <Clock size={14} />
+                    <span>Анализ выполнен: {new Date(result.timestamp).toLocaleString('ru-RU')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface EvaluationRequest {
   title: string;
   text: string;
 }
 
-export interface EvaluationResponse {
+export interface FreshnessModel {
+  name: string;
   status: string;
-  message?: string;
-  data?: any;
-  score?: number;
+  score: number;
+  confidence: number;
+}
+
+export interface Results {
+  freshness_model: FreshnessModel;
+}
+
+export interface EvaluationResponse {
+  summary: {
+    title: string;
+    text: string;
+  };
+  results: Results;
+  timestamp?: string;
 }
 
 export interface ApiError {
