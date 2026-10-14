@@ -3,7 +3,12 @@ import torch
 import logging
 import numpy as np
 
+from huggingface_hub import hf_hub_download
+
 from AI.freshness_model import FreshnessModel
+
+HF_REPO_ID = os.getenv("HF_REPO_ID", "IlyaZaycev/relevance-news")
+HF_FILENAME = os.getenv("HF_FILENAME", "freshness_model_cpu.pth")
 
 
 logging.basicConfig(
@@ -20,11 +25,18 @@ def load_model(model_path=None) -> FreshnessModel:
 
     if "model" not in load_model.cache:
         if model_path is None:
-            model_path = os.path.join(
-                os.path.dirname(__file__),
-                "models",
-                "freshness_model_cpu.pth"
-            )
+            model_path = os.getenv("MODEL_PATH")
+            if not model_path:
+                local_path = os.path.join(
+                    os.path.dirname(__file__),
+                    "models",
+                    "freshness_model_cpu.pth"
+                )
+                if os.path.exists(local_path):
+                    model_path = local_path
+                else:
+                    logger.info("Локальный файл модели не найден. Скачивание с Hugging Face (%s)...", HF_REPO_ID)
+                    model_path = hf_hub_download(repo_id=HF_REPO_ID, filename=HF_FILENAME)
 
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Модель не найдена: {model_path}")
@@ -38,7 +50,7 @@ def load_model(model_path=None) -> FreshnessModel:
         model.eval()
 
         load_model.cache["model"] = model
-        logger.info("FreshnessModel загружена")
+        logger.info("FreshnessModel успешно загружена из: %s", model_path)
 
     return load_model.cache["model"]
 

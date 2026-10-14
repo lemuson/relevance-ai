@@ -3,43 +3,42 @@
 RelevanceAI - веб-приложение на базе FastAPI и PyTorch, предназначенное для анализа актуальности новостных материалов. Система определяет, является ли текст «актуальным» или «устаревшим», используя обученную нейросетевую модель. Для обучения была использована предобученная RuBERT-модель.
 
 ## Использование
-Модель весит более 100 Мб и загружена через **Git LFS**. Для корректной работы необходимо клонировать репозиторий следующим образом:
-```
+Модель автоматически загружается из репозитория Hugging Face ([IlyaZaycev/relevance-news](https://huggingface.co/IlyaZaycev/relevance-news)) при первом запуске (и сохраняется в локальный кэш).
+
+Для запуска достаточно просто клонировать репозиторий:
+```BASH
 git clone https://github.com/lemuson/RelevanceAI.git
-cd RelevanceAI/backend
-git lfs install
-git lfs pull
-cd ..
+cd RelevanceAI
 ```
+
+### Запуск через Docker Compose
+```BASH
+docker compose up -d --build
+```
+
+### Запуск вручную
 
 <details>
 <summary>Backend</summary>
 
-Через Docker:  
-  ```BASH
-  cd backend
-  docker-compose up -d
-  cd ..
-  ```
-Или вручную:
-  ```BASH
-  cd backend
-  pip install -r requirements.txt
-  uvicorn main:app --reload
-  cd ..
-  ```
+```BASH
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+cd ..
+```
 
 </details>
 
 <details>
 <summary>Frontend</summary>
 
-  Через Docker:
-  ```BASH
-  cd frontend
-  docker-compose up -d
-  cd ..
-  ```
+```BASH
+cd frontend
+npm install
+npm run dev
+cd ..
+```
 </details>
 
 
